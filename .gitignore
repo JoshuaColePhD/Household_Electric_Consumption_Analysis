@@ -79,7 +79,9 @@ htmlcov/
 README.html
 README_files/
 
-# Large datasets (do not commit)
+# Ignore large datasets
 data/*.csv
+
+# Keep small outputs (optional)
 !data/model_metrics*.csv
 !data/evaluation_summary*.csv
