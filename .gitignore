@@ -78,3 +78,8 @@ htmlcov/
 # =========================
 README.html
 README_files/
+
+# Large datasets (do not commit)
+data/*.csv
+!data/model_metrics*.csv
+!data/evaluation_summary*.csv
