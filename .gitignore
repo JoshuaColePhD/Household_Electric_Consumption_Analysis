@@ -1,0 +1,80 @@
+# =========================
+# Python bytecode & cache
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+
+# =========================
+# Virtual environments
+# =========================
+.venv/
+venv/
+env/
+ENV/
+
+# =========================
+# Jupyter & notebooks
+# =========================
+.ipynb_checkpoints/
+*.nbconvert.ipynb
+
+# =========================
+# IDEs & editors
+# =========================
+.vscode/
+.idea/
+.spyderproject
+.spyproject
+*.swp
+
+# =========================
+# OS-generated files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Logs & temp files
+# =========================
+*.log
+*.tmp
+
+# =========================
+# Build artifacts
+# =========================
+build/
+dist/
+*.egg-info/
+
+# =========================
+# Model artifacts
+# =========================
+*.pkl
+*.joblib
+*.h5
+
+# =========================
+# Environment & secrets
+# =========================
+.env
+.env.*
+
+# =========================
+# Coverage / testing
+# =========================
+.coverage
+htmlcov/
+.pytest_cache/
+
+# =========================
+# Optional: figures
+# =========================
+# Uncomment if figures are auto-generated
+# figures/
+
+# =========================
+# Generated documentation
+# =========================
+README.html
+README_files/
