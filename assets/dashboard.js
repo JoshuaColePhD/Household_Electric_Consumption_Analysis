@@ -128,12 +128,18 @@ function renderLineChart() {
   const series = modelOrder
     .map((model) => {
       const dimmed = model !== state.model;
+      const selectedModelPoints = horizons.map((horizon) => {
+        const metric = getMetric(horizon, model);
+        return { x: x(horizon), y: y(metric.rmse) };
+      });
       const points = horizons
-        .map((horizon) => {
-          const metric = getMetric(horizon, model);
-          return `${x(horizon)},${y(metric.rmse)}`;
-        })
+        .map((horizon, index) => `${selectedModelPoints[index].x},${selectedModelPoints[index].y}`)
         .join(" ");
+      const areaPoints = [
+        `${selectedModelPoints[0].x},${height - padding.bottom}`,
+        ...selectedModelPoints.map((point) => `${point.x},${point.y}`),
+        `${selectedModelPoints[selectedModelPoints.length - 1].x},${height - padding.bottom}`,
+      ].join(" ");
 
       const circles = horizons
         .map((horizon) => {
@@ -159,6 +165,11 @@ function renderLineChart() {
 
       return `
         <g class="line-series ${dimmed ? "dimmed" : ""}">
+          ${
+            model === state.model
+              ? `<polygon points="${areaPoints}" fill="${accent[model]}" opacity="0.11"></polygon>`
+              : ""
+          }
           <polyline points="${points}" fill="none" stroke="${accent[model]}" stroke-width="${dimmed ? 2 : 4}" stroke-linecap="round" stroke-linejoin="round" />
           ${circles}
         </g>
