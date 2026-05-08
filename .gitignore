@@ -85,3 +85,4 @@ data/*.csv
 # Keep small outputs (optional)
 !data/model_metrics*.csv
 !data/evaluation_summary*.csv
+.vercel
