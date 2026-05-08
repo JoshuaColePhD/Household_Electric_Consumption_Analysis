@@ -1,0 +1,9 @@
+src/
+venv/
+.venv/
+__pycache__/
+*.py
+pyproject.toml
+requirements.txt
+README.html
+README_files/
