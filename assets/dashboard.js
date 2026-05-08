@@ -116,8 +116,8 @@ function renderBarChart() {
 
 function renderLineChart() {
   const width = 660;
-  const height = 292;
-  const padding = { top: 34, right: 28, bottom: 42, left: 48 };
+  const height = 224;
+  const padding = { top: 28, right: 24, bottom: 34, left: 42 };
   const plotW = width - padding.left - padding.right;
   const plotH = height - padding.top - padding.bottom;
   const horizons = [1, 15, 60];
