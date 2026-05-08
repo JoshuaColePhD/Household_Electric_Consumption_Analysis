@@ -10,12 +10,12 @@ A portfolio-ready time-series forecasting project that combines a reproducible P
 
 ## Live Dashboard
 
-**Dashboard:** _Vercel URL coming soon_  
+**Dashboard:** [https://householdelectricconsumptionanalysi.vercel.app](https://householdelectricconsumptionanalysi.vercel.app)  
 **Source:** [GitHub repository](https://github.com/JoshuaColePhD/Household_Electric_Consumption_Analysis)
 
 The dashboard is designed to make the modeling results explorable rather than buried in static tables. Recruiters and hiring managers will be able to compare model performance across forecast horizons, inspect how error changes over time, explore time-of-day consumption patterns, and review the modeling workflow at a glance.
 
-> Dashboard screenshot coming after implementation.
+The live dashboard is deployed on Vercel and optimized for fast public portfolio review.
 
 ---
 
