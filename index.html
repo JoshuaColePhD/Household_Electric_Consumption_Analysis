@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Interactive dashboard for household electricity consumption forecasting across 1, 15, and 60 minute horizons."
+    />
+    <title>Household Electricity Forecasting Dashboard</title>
+    <link rel="stylesheet" href="/assets/styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="Household Electricity Forecasting">
+        <span class="brand-mark">HE</span>
+        <span>
+          <strong>Household Electricity Forecasting</strong>
+          <small>Time-series modeling dashboard</small>
+        </span>
+      </a>
+      <nav class="nav-links" aria-label="Project links">
+        <a href="#dashboard">Dashboard</a>
+        <a href="#methodology">Methodology</a>
+        <a href="https://github.com/JoshuaColePhD/Household_Electric_Consumption_Analysis">GitHub</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero">
+        <div class="hero-copy">
+          <h1>Forecasting household power demand across practical time horizons.</h1>
+          <p>
+            A reproducible Python pipeline and interactive portfolio dashboard for comparing
+            baselines, linear models, and random forests on minute-level electricity consumption.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="#dashboard">Explore results</a>
+            <a class="button secondary" href="https://github.com/JoshuaColePhD/Household_Electric_Consumption_Analysis">
+              View source
+            </a>
+          </div>
+        </div>
+
+        <div class="hero-panel" aria-label="Project highlights">
+          <div class="stat">
+            <span>Observations</span>
+            <strong>~2.0M</strong>
+          </div>
+          <div class="stat">
+            <span>Horizons</span>
+            <strong>1 / 15 / 60 min</strong>
+          </div>
+          <div class="stat">
+            <span>Best model</span>
+            <strong>Random Forest</strong>
+          </div>
+          <div class="stat">
+            <span>Core insight</span>
+            <strong>Persistence fades with horizon</strong>
+          </div>
+        </div>
+      </section>
+
+      <section id="dashboard" class="dashboard-shell">
+        <aside class="control-rail" aria-label="Dashboard controls">
+          <h2>Forecast Lens</h2>
+          <p>Select a horizon and scenario to update the interpretation.</p>
+
+          <label for="horizonSelect">Forecast horizon</label>
+          <select id="horizonSelect">
+            <option value="1">1 minute</option>
+            <option value="15" selected>15 minutes</option>
+            <option value="60">60 minutes</option>
+          </select>
+
+          <label for="modelSelect">Model</label>
+          <select id="modelSelect">
+            <option value="random_forest" selected>Random Forest</option>
+            <option value="linear_regression_scaled">Linear Regression</option>
+            <option value="baseline_persistence">Persistence</option>
+            <option value="baseline_mean">Mean Baseline</option>
+          </select>
+
+          <label for="scenarioSelect">Usage scenario</label>
+          <select id="scenarioSelect">
+            <option value="normal" selected>Typical household rhythm</option>
+            <option value="spike">Spike-prone evening demand</option>
+            <option value="overnight">Overnight low-load period</option>
+          </select>
+        </aside>
+
+        <div class="dashboard-grid">
+          <section class="panel summary-panel">
+            <div>
+              <span class="section-label">Selected result</span>
+              <h2 id="selectedTitle">15-minute Random Forest forecast</h2>
+              <p id="selectedNarrative"></p>
+            </div>
+            <div class="metric-row">
+              <div>
+                <span>MAE</span>
+                <strong id="maeValue">0.337</strong>
+              </div>
+              <div>
+                <span>RMSE</span>
+                <strong id="rmseValue">0.562</strong>
+              </div>
+              <div>
+                <span>R²</span>
+                <strong id="r2Value">0.606</strong>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel chart-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-label">Model comparison</span>
+                <h2>RMSE at selected horizon</h2>
+              </div>
+              <span id="chartHorizonLabel" class="soft-tag">15 min</span>
+            </div>
+            <div id="barChart" class="chart" role="img" aria-label="Model comparison bar chart"></div>
+          </section>
+
+          <section class="panel chart-panel">
+            <div class="panel-heading">
+              <div>
+                <span class="section-label">Forecast degradation</span>
+                <h2>RMSE across horizons</h2>
+              </div>
+            </div>
+            <div id="lineChart" class="chart" role="img" aria-label="RMSE across forecast horizons"></div>
+          </section>
+
+          <section class="panel insight-panel">
+            <span class="section-label">Interpretation</span>
+            <h2>What this says to a recruiter</h2>
+            <p>
+              The project does more than train a model: it compares against strong baselines,
+              respects time ordering, and shows when added model complexity is justified.
+            </p>
+            <ul>
+              <li>Persistence is hard to beat at 1 minute because nearby readings are highly autocorrelated.</li>
+              <li>At 15 and 60 minutes, engineered temporal features help Random Forest degrade more gracefully.</li>
+              <li>The dashboard productizes the analysis so results are easy to inspect and explain.</li>
+            </ul>
+          </section>
+        </div>
+      </section>
+
+      <section class="patterns">
+        <article class="panel">
+          <span class="section-label">Consumption rhythm</span>
+          <h2>Average power by hour</h2>
+          <img src="/figures/avg_global_active_power_by_hour.png" alt="Average global active power by hour" />
+        </article>
+        <article class="panel">
+          <span class="section-label">Outlier timing</span>
+          <h2>Outlier frequency by hour</h2>
+          <img src="/figures/outlier_frequency_by_hour.png" alt="Outlier frequency by hour" />
+        </article>
+      </section>
+
+      <section id="methodology" class="methodology">
+        <span class="section-label">Methodology</span>
+        <h2>From raw data to deployable analytics</h2>
+        <div class="steps">
+          <div><strong>1</strong><span>Clean and validate UCI minute-level measurements</span></div>
+          <div><strong>2</strong><span>Engineer lag, rolling, calendar, and outlier features</span></div>
+          <div><strong>3</strong><span>Evaluate baselines and ML models with time-aware splits</span></div>
+          <div><strong>4</strong><span>Package small artifacts for a fast public dashboard</span></div>
+        </div>
+      </section>
+    </main>
+
+    <script src="/assets/dashboard.js"></script>
+  </body>
+</html>
