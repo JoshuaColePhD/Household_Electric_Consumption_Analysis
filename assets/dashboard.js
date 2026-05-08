@@ -16,15 +16,18 @@ const metrics = [
 const modelOrder = ["random_forest", "linear_regression_scaled", "baseline_persistence", "baseline_mean"];
 const modelNames = Object.fromEntries(metrics.map((metric) => [metric.model, metric.label]));
 const accent = {
-  random_forest: "#0d9f75",
-  linear_regression_scaled: "#1463ff",
-  baseline_persistence: "#e1862f",
-  baseline_mean: "#8a96a8",
+  random_forest: "#07946e",
+  linear_regression_scaled: "#175cd3",
+  baseline_persistence: "#d97706",
+  baseline_mean: "#697586",
 };
 
-const horizonSelect = document.querySelector("#horizonSelect");
-const modelSelect = document.querySelector("#modelSelect");
-const scenarioSelect = document.querySelector("#scenarioSelect");
+const state = {
+  horizon: 15,
+  model: "random_forest",
+  scenario: "normal",
+};
+
 const selectedTitle = document.querySelector("#selectedTitle");
 const selectedNarrative = document.querySelector("#selectedNarrative");
 const maeValue = document.querySelector("#maeValue");
@@ -42,63 +45,79 @@ function getMetric(horizon, model) {
   return metrics.find((metric) => metric.horizon === Number(horizon) && metric.model === model);
 }
 
-function scenarioText(metric, scenario) {
+function setActiveButtons() {
+  document.querySelectorAll("[data-horizon]").forEach((button) => {
+    button.classList.toggle("active", Number(button.dataset.horizon) === state.horizon);
+  });
+  document.querySelectorAll("[data-model]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.model === state.model);
+  });
+  document.querySelectorAll("[data-scenario]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.scenario === state.scenario);
+  });
+}
+
+function scenarioText(metric) {
+  const horizonCopy = {
+    1: "At a 1-minute horizon, the signal is so autocorrelated that persistence remains a serious benchmark.",
+    15: "At a 15-minute horizon, recent usage still matters, but feature-based modeling starts to separate itself from simple persistence.",
+    60: "At a 60-minute horizon, the forecasting task is meaningfully harder, and the nonlinear model retains the strongest RMSE profile.",
+  };
+
   const scenarioCopy = {
-    normal: "For a typical usage rhythm, this model gives a grounded estimate of expected forecast error without pretending the household signal is perfectly smooth.",
-    spike: "In a spike-prone evening setting, expect wider practical uncertainty because high-demand events are real behavior rather than noise to discard.",
-    overnight: "During lower-load overnight periods, short-horizon autocorrelation is especially useful, which is why persistence remains competitive at the shortest horizon.",
+    normal: "Typical household rhythm keeps the interpretation centered on recurring daily load patterns.",
+    spike: "Evening spikes widen the practical uncertainty because high-demand events are real behavior, not cleanup errors.",
+    overnight: "Overnight load tends to be calmer, which is why short-horizon baselines can look deceptively strong.",
   };
 
   const modelCopy =
     metric.model === "random_forest"
-      ? "The Random Forest result shows the strongest RMSE profile for this horizon."
+      ? "Random Forest is the strongest overall choice by RMSE across the evaluated horizons."
       : metric.model === "baseline_persistence"
-        ? "The persistence baseline is intentionally included as a tough, honest comparator."
-        : "This model is useful as a comparison point against both simple baselines and nonlinear modeling.";
+        ? "Persistence is included as a demanding baseline, especially for very short forecasts."
+        : metric.model === "linear_regression_scaled"
+          ? "Linear Regression gives a transparent middle ground between simple baselines and nonlinear modeling."
+          : "The mean baseline anchors the comparison and shows why temporal information matters.";
 
-  return `${scenarioCopy[scenario]} ${modelCopy}`;
+  return `${horizonCopy[metric.horizon]} ${scenarioCopy[state.scenario]} ${modelCopy}`;
 }
 
 function renderSummary() {
-  const horizon = Number(horizonSelect.value);
-  const model = modelSelect.value;
-  const scenario = scenarioSelect.value;
-  const metric = getMetric(horizon, model);
+  const metric = getMetric(state.horizon, state.model);
 
-  selectedTitle.textContent = `${horizon}-minute ${metric.label} forecast`;
-  selectedNarrative.textContent = scenarioText(metric, scenario);
+  selectedTitle.textContent = `${state.horizon}-minute ${metric.label} forecast`;
+  selectedNarrative.textContent = scenarioText(metric);
   maeValue.textContent = formatMetric(metric.mae);
   rmseValue.textContent = formatMetric(metric.rmse);
   r2Value.textContent = formatMetric(metric.r2);
-  chartHorizonLabel.textContent = `${horizon} min`;
+  chartHorizonLabel.textContent = `${state.horizon} min`;
 }
 
 function renderBarChart() {
-  const horizon = Number(horizonSelect.value);
-  const selectedModel = modelSelect.value;
-  const horizonMetrics = modelOrder.map((model) => getMetric(horizon, model));
+  const horizonMetrics = modelOrder.map((model) => getMetric(state.horizon, model));
   const maxRmse = Math.max(...horizonMetrics.map((metric) => metric.rmse));
 
   barChart.innerHTML = horizonMetrics
     .map((metric) => {
-      const width = Math.max(6, (metric.rmse / maxRmse) * 100);
+      const width = Math.max(5, (metric.rmse / maxRmse) * 100);
+      const isSelected = metric.model === state.model;
       return `
-        <div class="bar-row ${metric.model === selectedModel ? "selected" : ""}">
+        <button type="button" class="bar-row ${isSelected ? "selected" : ""}" data-bar-model="${metric.model}" aria-label="Select ${metric.label}">
           <span class="bar-label">${metric.label}</span>
-          <div class="bar-track">
-            <div class="bar-fill" style="width:${width}%; background:${metric.model === selectedModel ? accent[metric.model] : "#b6c4d2"}"></div>
-          </div>
+          <span class="bar-track">
+            <span class="bar-fill" style="width:${width}%; background:${isSelected ? accent[metric.model] : "#b6c4d2"}"></span>
+          </span>
           <span class="bar-value">${formatMetric(metric.rmse)}</span>
-        </div>
+        </button>
       `;
     })
     .join("");
 }
 
 function renderLineChart() {
-  const width = 620;
-  const height = 270;
-  const padding = { top: 20, right: 26, bottom: 40, left: 46 };
+  const width = 660;
+  const height = 292;
+  const padding = { top: 34, right: 28, bottom: 42, left: 48 };
   const plotW = width - padding.left - padding.right;
   const plotH = height - padding.top - padding.bottom;
   const horizons = [1, 15, 60];
@@ -108,18 +127,41 @@ function renderLineChart() {
 
   const series = modelOrder
     .map((model) => {
-      const points = horizons.map((horizon) => {
-        const metric = getMetric(horizon, model);
-        return `${x(horizon)},${y(metric.rmse)}`;
-      });
+      const dimmed = model !== state.model;
+      const points = horizons
+        .map((horizon) => {
+          const metric = getMetric(horizon, model);
+          return `${x(horizon)},${y(metric.rmse)}`;
+        })
+        .join(" ");
+
+      const circles = horizons
+        .map((horizon) => {
+          const metric = getMetric(horizon, model);
+          const selected = model === state.model && horizon === state.horizon;
+          return `
+            <circle
+              class="line-point ${selected ? "selected" : ""}"
+              data-point-model="${model}"
+              data-point-horizon="${horizon}"
+              cx="${x(horizon)}"
+              cy="${y(metric.rmse)}"
+              r="${selected ? 7 : 5}"
+              fill="${accent[model]}"
+              stroke="${selected ? "#fff" : "transparent"}"
+              stroke-width="${selected ? 3 : 0}"
+            >
+              <title>${metric.label}, ${horizon} min: RMSE ${formatMetric(metric.rmse)}</title>
+            </circle>
+          `;
+        })
+        .join("");
+
       return `
-        <polyline points="${points.join(" ")}" fill="none" stroke="${accent[model]}" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
-        ${horizons
-          .map((horizon) => {
-            const metric = getMetric(horizon, model);
-            return `<circle cx="${x(horizon)}" cy="${y(metric.rmse)}" r="4" fill="${accent[model]}" />`;
-          })
-          .join("")}
+        <g class="line-series ${dimmed ? "dimmed" : ""}">
+          <polyline points="${points}" fill="none" stroke="${accent[model]}" stroke-width="${dimmed ? 2 : 4}" stroke-linecap="round" stroke-linejoin="round" />
+          ${circles}
+        </g>
       `;
     })
     .join("");
@@ -140,14 +182,17 @@ function renderLineChart() {
 
   const legend = modelOrder
     .map((model, index) => {
-      const lx = padding.left + index * 126;
+      const lx = padding.left + index * 138;
       return `
-        <circle cx="${lx}" cy="14" r="4" fill="${accent[model]}" />
-        <text class="axis-text" x="${lx + 9}" y="18">${modelNames[model]}</text>
+        <g class="legend-item" data-legend-model="${model}">
+          <circle cx="${lx}" cy="16" r="5" fill="${accent[model]}" />
+          <text class="axis-text" x="${lx + 11}" y="20">${modelNames[model]}</text>
+        </g>
       `;
     })
     .join("");
 
+  const activeMetric = getMetric(state.horizon, state.model);
   lineChart.innerHTML = `
     <svg class="line-svg" viewBox="0 0 ${width} ${height}" aria-hidden="true">
       ${grid}
@@ -155,17 +200,58 @@ function renderLineChart() {
       ${xAxis}
       ${legend}
     </svg>
+    <div class="chart-tooltip">
+      <span style="color:${accent[state.model]}">●</span>
+      ${activeMetric.label} at ${state.horizon} min: RMSE ${formatMetric(activeMetric.rmse)}
+    </div>
   `;
 }
 
 function updateDashboard() {
+  setActiveButtons();
   renderSummary();
   renderBarChart();
   renderLineChart();
 }
 
-[horizonSelect, modelSelect, scenarioSelect].forEach((control) => {
-  control.addEventListener("change", updateDashboard);
+document.querySelector("#horizonControls").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-horizon]");
+  if (!button) return;
+  state.horizon = Number(button.dataset.horizon);
+  updateDashboard();
+});
+
+document.querySelector("#modelControls").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-model]");
+  if (!button) return;
+  state.model = button.dataset.model;
+  updateDashboard();
+});
+
+document.querySelector("#scenarioControls").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-scenario]");
+  if (!button) return;
+  state.scenario = button.dataset.scenario;
+  updateDashboard();
+});
+
+barChart.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-bar-model]");
+  if (!button) return;
+  state.model = button.dataset.barModel;
+  updateDashboard();
+});
+
+lineChart.addEventListener("click", (event) => {
+  const point = event.target.closest("[data-point-model], [data-legend-model]");
+  if (!point) return;
+  if (point.dataset.pointModel) {
+    state.model = point.dataset.pointModel;
+    state.horizon = Number(point.dataset.pointHorizon);
+  } else {
+    state.model = point.dataset.legendModel;
+  }
+  updateDashboard();
 });
 
 updateDashboard();

@@ -65,29 +65,35 @@
       <section id="dashboard" class="dashboard-shell">
         <aside class="control-rail" aria-label="Dashboard controls">
           <h2>Forecast Lens</h2>
-          <p>Select a horizon and scenario to update the interpretation.</p>
+          <p>Click through horizons, models, and demand scenarios to see the metrics and story change.</p>
 
-          <label for="horizonSelect">Forecast horizon</label>
-          <select id="horizonSelect">
-            <option value="1">1 minute</option>
-            <option value="15" selected>15 minutes</option>
-            <option value="60">60 minutes</option>
-          </select>
+          <div class="control-group">
+            <span class="control-label">Forecast horizon</span>
+            <div class="segmented" id="horizonControls" aria-label="Forecast horizon">
+              <button type="button" data-horizon="1">1 min</button>
+              <button type="button" class="active" data-horizon="15">15 min</button>
+              <button type="button" data-horizon="60">60 min</button>
+            </div>
+          </div>
 
-          <label for="modelSelect">Model</label>
-          <select id="modelSelect">
-            <option value="random_forest" selected>Random Forest</option>
-            <option value="linear_regression_scaled">Linear Regression</option>
-            <option value="baseline_persistence">Persistence</option>
-            <option value="baseline_mean">Mean Baseline</option>
-          </select>
+          <div class="control-group">
+            <span class="control-label">Model</span>
+            <div class="model-buttons" id="modelControls" aria-label="Model">
+              <button type="button" class="active" data-model="random_forest">Random Forest</button>
+              <button type="button" data-model="linear_regression_scaled">Linear Regression</button>
+              <button type="button" data-model="baseline_persistence">Persistence</button>
+              <button type="button" data-model="baseline_mean">Mean Baseline</button>
+            </div>
+          </div>
 
-          <label for="scenarioSelect">Usage scenario</label>
-          <select id="scenarioSelect">
-            <option value="normal" selected>Typical household rhythm</option>
-            <option value="spike">Spike-prone evening demand</option>
-            <option value="overnight">Overnight low-load period</option>
-          </select>
+          <div class="control-group">
+            <span class="control-label">Usage scenario</span>
+            <div class="scenario-buttons" id="scenarioControls" aria-label="Usage scenario">
+              <button type="button" class="active" data-scenario="normal">Typical rhythm</button>
+              <button type="button" data-scenario="spike">Evening spikes</button>
+              <button type="button" data-scenario="overnight">Overnight load</button>
+            </div>
+          </div>
         </aside>
 
         <div class="dashboard-grid">
@@ -101,14 +107,17 @@
               <div>
                 <span>MAE</span>
                 <strong id="maeValue">0.337</strong>
+                <small>Average absolute miss</small>
               </div>
               <div>
                 <span>RMSE</span>
                 <strong id="rmseValue">0.562</strong>
+                <small>Penalty for larger misses</small>
               </div>
               <div>
                 <span>R²</span>
                 <strong id="r2Value">0.606</strong>
+                <small>Explained validation variance</small>
               </div>
             </div>
           </section>
@@ -121,7 +130,8 @@
               </div>
               <span id="chartHorizonLabel" class="soft-tag">15 min</span>
             </div>
-            <div id="barChart" class="chart" role="img" aria-label="Model comparison bar chart"></div>
+            <div id="barChart" class="chart bar-chart" role="img" aria-label="Interactive model comparison bar chart"></div>
+            <p class="chart-note">Click a bar to select that model.</p>
           </section>
 
           <section class="panel chart-panel">
@@ -131,15 +141,16 @@
                 <h2>RMSE across horizons</h2>
               </div>
             </div>
-            <div id="lineChart" class="chart" role="img" aria-label="RMSE across forecast horizons"></div>
+            <div id="lineChart" class="chart line-chart-wrap" role="img" aria-label="Interactive RMSE across forecast horizons"></div>
+            <p class="chart-note">Click a point to jump to that horizon and model.</p>
           </section>
 
           <section class="panel insight-panel">
             <span class="section-label">Interpretation</span>
-            <h2>What this says to a recruiter</h2>
+            <h2>Modeling takeaways</h2>
             <p>
-              The project does more than train a model: it compares against strong baselines,
-              respects time ordering, and shows when added model complexity is justified.
+              The analysis is designed to show judgment, not just model fitting: every result is
+              compared against strong baselines and evaluated with time ordering intact.
             </p>
             <ul>
               <li>Persistence is hard to beat at 1 minute because nearby readings are highly autocorrelated.</li>
