@@ -16,10 +16,10 @@ const metrics = [
 const modelOrder = ["random_forest", "linear_regression_scaled", "baseline_persistence", "baseline_mean"];
 const modelNames = Object.fromEntries(metrics.map((metric) => [metric.model, metric.label]));
 const accent = {
-  random_forest: "#07946e",
-  linear_regression_scaled: "#175cd3",
-  baseline_persistence: "#d97706",
-  baseline_mean: "#697586",
+  random_forest: "#12b981",
+  linear_regression_scaled: "#48a8ff",
+  baseline_persistence: "#f4c95d",
+  baseline_mean: "#b58cff",
 };
 
 const state = {
@@ -181,7 +181,7 @@ function renderLineChart() {
     .map((tick) => {
       const yy = y(tick);
       return `
-        <line x1="${padding.left}" y1="${yy}" x2="${width - padding.right}" y2="${yy}" stroke="#e5ebf1" />
+        <line x1="${padding.left}" y1="${yy}" x2="${width - padding.right}" y2="${yy}" stroke="#26415f" />
         <text class="axis-text" x="8" y="${yy + 4}">${tick.toFixed(2)}</text>
       `;
     })

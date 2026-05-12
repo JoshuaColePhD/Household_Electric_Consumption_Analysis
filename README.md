@@ -1,156 +1,101 @@
 # Household Electricity Consumption Forecasting
 
-A portfolio-ready time-series forecasting project that combines a reproducible Python analytics pipeline with an interactive dashboard designed for recruiter review and Vercel deployment.
+Short-term electricity demand looks predictable until the forecast window starts to widen.
 
-**Analysis stack:** Python · pandas · scikit-learn · matplotlib · seaborn  
-**Dashboard stack:** HTML · CSS · JavaScript · interactive SVG charts · static artifacts  
-**Deployment target:** Vercel
+At a one-minute horizon, the most recent reading carries a lot of information. But that advantage fades quickly as the prediction target moves farther out. This project asks a practical forecasting question:
 
----
+**When is a simple baseline enough, and when does a feature-based model add useful signal for household electricity planning?**
 
-## Live Dashboard
+To answer it, I built a reproducible Python time-series pipeline, evaluated multiple forecast horizons, and translated the results into a compact Vercel dashboard designed for portfolio review.
 
-**Dashboard:** [https://householdelectricconsumptionanalysi.vercel.app](https://householdelectricconsumptionanalysi.vercel.app)  
-**Source:** [GitHub repository](https://github.com/JoshuaColePhD/Household_Electric_Consumption_Analysis)
+**Live dashboard:** https://householdelectricconsumptionanalysi.vercel.app  
+**Repository:** https://github.com/JoshuaColePhD/Household_Electric_Consumption_Analysis
 
-The dashboard is designed to make the modeling results explorable rather than buried in static tables. Recruiters and hiring managers will be able to compare model performance across forecast horizons, inspect how error changes over time, explore time-of-day consumption patterns, and review the modeling workflow at a glance.
+[![RMSE by forecast horizon](figures/rmse_by_horizon.png)](https://householdelectricconsumptionanalysi.vercel.app)
 
-The live dashboard is deployed on Vercel and optimized for fast public portfolio review.
+*Forecast error increases as the horizon expands. Open the dashboard for interactive model, horizon, and scenario views.*
 
----
+## The Story
 
-## Key Results at a Glance
+Imagine a household energy platform trying to estimate near-term demand. For the next minute, the easiest answer is often the last observed value. That persistence baseline is simple, cheap, and hard to beat when consumption is highly autocorrelated.
 
-- **Dataset:** UCI Individual Household Electric Power Consumption
-- **Observations:** ~2.0 million minute-level measurements
-- **Forecast horizons:** 1, 15, and 60 minutes
-- **Best-performing model by RMSE:** Random Forest Regressor
-- **Validation approach:** time-aware train/validation split to avoid leakage
-- **Main insight:** persistence is highly competitive at 1 minute, but degrades quickly as the forecast horizon increases; feature-based nonlinear models retain more predictive power at 15 and 60 minutes.
+But operational decisions rarely stop at the next minute.
 
-### Model Performance by Forecast Horizon
+As the horizon moves to 15 or 60 minutes, appliance cycles, household routines, and high-demand events begin to matter more. A model has to learn temporal structure instead of merely repeating the present.
 
-| Horizon | Persistence RMSE | Linear Regression RMSE | Random Forest RMSE |
-|-------:|-----------------:|-----------------------:|-------------------:|
-| 1 min  | 0.22 | 0.22 | **0.21** |
-| 15 min | 0.70 | 0.60 | **0.56** |
-| 60 min | 0.95 | 0.78 | **0.73** |
+That is the core of this project: compare strong baselines against machine-learning models across practical horizons, then make the tradeoffs easy to inspect in a public dashboard.
 
-![RMSE vs Forecast Horizon](figures/rmse_by_horizon.png)
+## What the Analysis Found
 
----
+Random Forest produced the lowest RMSE across the evaluated horizons, while persistence remained highly competitive at one minute. The main modeling lesson is not that one algorithm wins everywhere. It is that model value depends on the forecast window.
 
-## Interactive Dashboard Features
+| Horizon | Persistence RMSE | Linear Regression RMSE | Random Forest RMSE | Interpretation |
+| ---: | ---: | ---: | ---: | --- |
+| 1 min | 0.22 | 0.22 | **0.21** | Persistence is a demanding near-term benchmark. |
+| 15 min | 0.70 | 0.60 | **0.56** | Feature-based models begin to separate from simple carry-forward logic. |
+| 60 min | 0.95 | 0.78 | **0.73** | Nonlinear temporal features retain more predictive power. |
 
-The dashboard turns the project into a polished, recruiter-friendly product surface:
+The dashboard frames these results in business language: short-horizon forecasts are useful for immediate monitoring, while wider horizons require more modeling structure and clearer uncertainty communication.
 
-- **Horizon selector:** compare 1-, 15-, and 60-minute forecasting behavior.
-- **Model comparison charts:** evaluate persistence, mean baseline, linear regression, and random forest results.
-- **RMSE degradation view:** show how forecast error increases as prediction windows get longer.
-- **Scenario explorer:** adjust horizon, model, time of day, and usage scenario to see how expected error and interpretation change.
-- **Time-of-day usage patterns:** highlight daily household electricity rhythms.
-- **Outlier-by-hour module:** show when unusually high consumption events cluster.
-- **Methodology strip:** summarize the full pipeline from raw data to evaluation artifacts.
+## The Dashboard
 
-The dashboard is deployed as a static Vercel app using lightweight committed artifacts, not the full raw dataset.
+**Open the live dashboard:** https://householdelectricconsumptionanalysi.vercel.app
 
----
+The dashboard is a static Vercel app with a darker executive-BI design system inspired by the companion HR attrition project. It is intentionally lightweight: committed summary artifacts power the public interface, while large raw and intermediate datasets stay out of git.
 
-## Data and Methodology
+Dashboard features:
 
-### Data Source
+- Forecast horizon controls for 1-, 15-, and 60-minute targets
+- Model selector for Random Forest, scaled linear regression, persistence, and mean baselines
+- KPI cards for selected MAE, RMSE, and R²
+- Interactive bar chart for selected-horizon model comparison
+- Interactive RMSE degradation chart across forecast horizons
+- Scenario framing for typical rhythm, evening spikes, and overnight load
+- Static visual modules for time-of-day consumption and outlier timing
+- Methodology strip from raw UCI measurements to deployable analytics
 
-This project uses the **Individual Household Electric Power Consumption** dataset from the UCI Machine Learning Repository. The unit of analysis is minute-level household electricity measurement.
+## Methodology
 
-Key variables include:
+### Data
 
-- Global active power in kilowatts
-- Global reactive power
-- Voltage
-- Global intensity
-- Appliance-level sub-metering
-- Timestamp at minute resolution
+| Attribute | Value |
+| --- | --- |
+| Source | UCI Individual Household Electric Power Consumption dataset |
+| Unit of analysis | Minute-level household electricity reading |
+| Observations | About 2.0 million measurements |
+| Target | Future global active power |
+| Forecast horizons | 1, 15, and 60 minutes |
 
-### Project Questions
-
-- How predictable is household electricity usage at short and medium horizons?
-- When are simple baselines sufficient, and when does machine learning add value?
-- How quickly does forecast accuracy degrade as the prediction horizon increases?
-- Which temporal features help capture household consumption dynamics?
+Key variables include global active power, global reactive power, voltage, global intensity, appliance sub-metering, and timestamp-derived temporal features.
 
 ### Workflow
 
-1. **Load and clean:** fetch raw UCI data, validate schema, parse timestamps, normalize types, handle missing values, and flag outliers.
-2. **Explore:** inspect daily, weekly, hourly, and outlier patterns to understand temporal structure.
-3. **Engineer features:** create time-based, lag, rolling-window, and outlier-context features.
-4. **Model:** evaluate persistence, mean baseline, scaled linear regression, and random forest models.
-5. **Evaluate:** compare MAE, RMSE, and R² across 1-, 15-, and 60-minute horizons.
-6. **Productize:** serve lightweight dashboard artifacts through an interactive Vercel app.
-
----
+1. **Load and clean.** Validate schema, parse timestamps, normalize numeric fields, handle missing values, and flag outliers.
+2. **Explore consumption patterns.** Inspect daily, weekly, hourly, and outlier timing behavior.
+3. **Engineer features.** Create calendar, lag, rolling-window, and outlier-context features.
+4. **Model forecasts.** Evaluate persistence, mean baseline, scaled linear regression, and random forest models.
+5. **Compare horizons.** Report MAE, RMSE, and R² across 1-, 15-, and 60-minute targets using time-aware validation.
+6. **Productize results.** Export small CSV/figure artifacts for a fast Vercel dashboard.
 
 ## Key Visual Findings
 
-Household electricity consumption shows strong daily structure, with usage lowest overnight and higher during active household hours.
+Household electricity consumption has a clear daily rhythm, with lower overnight usage and higher demand during active household hours.
 
 ![Average Global Active Power by Hour](figures/avg_global_active_power_by_hour.png)
 
-Outliers are retained and flagged rather than removed because they often represent meaningful household behavior such as appliance usage, heating, cooking, or other high-demand events.
+High-demand outliers are retained and flagged rather than removed because they can represent real household behavior such as cooking, heating, or appliance cycles.
 
 ![Outlier Frequency by Hour](figures/outlier_frequency_by_hour.png)
 
----
+## Reproducing the Project
 
-## Project Structure
-
-```text
-HOUSEHOLD_ELECTRIC_CONSUMPTION_ANALYSIS/
-├── assets/
-│   ├── dashboard.js                   # interactive dashboard behavior
-│   └── styles.css                     # dashboard visual system
-├── data/
-│   ├── model_metrics_by_horizon.csv
-│   ├── evaluation_summary_by_horizon.csv
-│   └── *.csv                          # small committed result artifacts
-├── figures/
-│   ├── avg_global_active_power_by_hour.png
-│   ├── daily_avg_global_active_power.png
-│   ├── weekly_avg_global_active_power.png
-│   ├── outlier_frequency_by_hour.png
-│   ├── model_rmse_comparison_h15.png
-│   └── rmse_by_horizon.png
-├── src/
-│   ├── 00_load_and_clean.py
-│   ├── 01_eda.py
-│   ├── 02_features.py
-│   ├── 03_modeling.py
-│   └── 04_evaluation.py
-├── index.html                         # static dashboard entrypoint
-├── package.json                       # Vercel build script
-├── requirements.txt
-├── vercel.json                        # Vercel static output configuration
-└── README.md
-```
-
-Large raw and intermediate datasets are intentionally excluded from git. The analysis pipeline regenerates them locally, while the deployed dashboard consumes small committed summary artifacts.
-
----
-
-## Run Locally
-
-### 1. Reproduce the Python Analysis
-
-Create and activate a virtual environment, then install dependencies:
+### Run the Python Pipeline
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-```
 
-Run the pipeline from the project root:
-
-```bash
 python src/00_load_and_clean.py
 python src/01_eda.py
 python src/02_features.py
@@ -158,61 +103,55 @@ python src/03_modeling.py
 python src/04_evaluation.py
 ```
 
-### 2. Run the Dashboard
-
-Build the static dashboard:
+### Build the Dashboard
 
 ```bash
+npm install
 npm run build
 ```
 
-Preview the built site locally:
+### Preview Locally
 
 ```bash
-cd dist
-python3 -m http.server 5173
+npm run dev
 ```
 
----
+Open `http://localhost:5173`.
 
 ## Vercel Deployment
 
-The dashboard is a static app deployed through Vercel.
+The deployment is intentionally simple:
 
 - Vercel runs `npm run build`.
-- The production output is served from `dist/`.
-- The app will use lightweight exported CSV/JSON artifacts instead of raw household-level data.
-- Raw UCI data, processed feature datasets, virtual environments, generated documentation, and local build artifacts remain excluded through `.gitignore`.
+- `scripts/build-static.mjs` copies `index.html`, `assets/`, `figures/`, and `data/` into `dist/`.
+- `vercel.json` serves `dist/` as the static output directory.
+- Raw data, processed feature tables, virtual environments, and local build artifacts remain excluded.
 
-This keeps the deployed site fast, reproducible, and appropriate for a public portfolio repository.
+This keeps the public dashboard fast, portable, and appropriate for a portfolio repository.
 
----
+## Project Structure
 
-## Skills Demonstrated
+```text
+HOUSEHOLD_ELECTRIC_CONSUMPTION_ANALYSIS/
+├── assets/                 # dashboard CSS and JavaScript
+├── data/                   # committed model/evaluation summary artifacts
+├── figures/                # exported plots used in README and dashboard
+├── scripts/                # static Vercel build script
+├── src/                    # Python analysis pipeline
+├── index.html              # static dashboard entrypoint
+├── package.json
+├── requirements.txt
+├── vercel.json
+└── README.md
+```
+
+## Portfolio Skills Demonstrated
 
 - Time-series data cleaning and validation
 - Missing-value handling and outlier flagging
-- Exploratory time-series analysis
-- Feature engineering with lags, rolling statistics, and temporal indicators
+- Feature engineering with lags, rolling statistics, and calendar signals
 - Baseline-aware forecasting
-- Leakage-free model evaluation
+- Leakage-conscious model evaluation
 - Multi-horizon performance comparison
-- Communicating model results through a productized analytics dashboard
-- Preparing an analytics project for frontend deployment and recruiter review
-
----
-
-## Optional Extensions
-
-- Incorporate weather or calendar features as exogenous predictors.
-- Add longer-horizon or aggregated daily forecasting.
-- Compare sequence-based models such as LSTM or temporal CNN architectures.
-- Add richer scenario-based demand risk analysis to the dashboard.
-
----
-
-## Contact
-
-**Joshua Cole, PhD**  
-Data Analytics · Time Series · Applied Modeling  
-GitHub: [JoshuaColePhD](https://github.com/JoshuaColePhD)
+- Interactive analytics dashboard design
+- Static Vercel deployment for public portfolio review
