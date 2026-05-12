@@ -51,7 +51,6 @@ Dashboard features:
 - Interactive bar chart for selected-horizon model comparison
 - Interactive RMSE degradation chart across forecast horizons
 - Scenario framing for typical rhythm, evening spikes, and overnight load
-- Static visual modules for time-of-day consumption and outlier timing
 - Methodology strip from raw UCI measurements to deployable analytics
 
 ## Methodology
@@ -76,16 +75,6 @@ Key variables include global active power, global reactive power, voltage, globa
 4. **Model forecasts.** Evaluate persistence, mean baseline, scaled linear regression, and random forest models.
 5. **Compare horizons.** Report MAE, RMSE, and R² across 1-, 15-, and 60-minute targets using time-aware validation.
 6. **Productize results.** Export small CSV/figure artifacts for a fast Vercel dashboard.
-
-## Key Visual Findings
-
-Household electricity consumption has a clear daily rhythm, with lower overnight usage and higher demand during active household hours.
-
-![Average Global Active Power by Hour](figures/avg_global_active_power_by_hour.png)
-
-High-demand outliers are retained and flagged rather than removed because they can represent real household behavior such as cooking, heating, or appliance cycles.
-
-![Outlier Frequency by Hour](figures/outlier_frequency_by_hour.png)
 
 ## Reproducing the Project
 

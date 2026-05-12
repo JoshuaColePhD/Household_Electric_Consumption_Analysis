@@ -30,10 +30,6 @@
       <section class="hero">
         <div class="hero-copy">
           <h1>Forecast household demand before short-term uncertainty compounds.</h1>
-          <p>
-            A compact executive dashboard for comparing baseline and machine-learning forecasts across
-            1-, 15-, and 60-minute electricity demand horizons.
-          </p>
           <div class="hero-actions">
             <a class="button primary" href="#dashboard">Explore results</a>
             <a class="button secondary" href="https://github.com/JoshuaColePhD/Household_Electric_Consumption_Analysis">
@@ -94,6 +90,19 @@
               <button type="button" data-scenario="overnight">Overnight load</button>
             </div>
           </div>
+
+          <section class="rail-insight" aria-label="Modeling takeaways">
+            <span class="section-label">Interpretation</span>
+            <h2>Modeling takeaways</h2>
+            <p>
+              Each result is benchmarked against simple baselines and validated with the time order intact.
+            </p>
+            <ul>
+              <li>Persistence is hard to beat at 1 minute.</li>
+              <li>Random Forest degrades more gracefully at 15 and 60 minutes.</li>
+              <li>The dashboard turns model results into a clear product surface.</li>
+            </ul>
+          </section>
         </aside>
 
         <div class="dashboard-grid">
@@ -168,32 +177,7 @@
             <p class="chart-note">Click a point to jump to that horizon and model.</p>
           </section>
 
-          <section class="panel insight-panel">
-            <span class="section-label">Interpretation</span>
-            <h2>Modeling takeaways</h2>
-            <p>
-              Each result is benchmarked against simple baselines and validated with the time order intact.
-            </p>
-            <ul>
-              <li>Persistence is hard to beat at 1 minute.</li>
-              <li>Random Forest degrades more gracefully at 15 and 60 minutes.</li>
-              <li>The dashboard turns model results into a clear product surface.</li>
-            </ul>
-          </section>
         </div>
-      </section>
-
-      <section class="patterns">
-        <article class="panel">
-          <span class="section-label">Consumption rhythm</span>
-          <h2>Average power by hour</h2>
-          <img src="/figures/avg_global_active_power_by_hour.png" alt="Average global active power by hour" />
-        </article>
-        <article class="panel">
-          <span class="section-label">Outlier timing</span>
-          <h2>Outlier frequency by hour</h2>
-          <img src="/figures/outlier_frequency_by_hour.png" alt="Outlier frequency by hour" />
-        </article>
       </section>
 
       <section id="methodology" class="methodology">
