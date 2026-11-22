@@ -35,12 +35,18 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from sklearn.dummy import DummyRegressor
 from sklearn.linear_model import LinearRegression
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import StandardScaler
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+
+from forecasting import (
+    evaluate_regression,
+    make_horizon_target,
+    mean_baseline,
+    persistence_baseline,
+    time_split,
+)
 
 # %%
 # ---- CONFIG ----
@@ -72,18 +78,7 @@ if VERBOSE:
 
 # %%
 # ---- EVALUATION HELPER ----
-def evaluate_regression(model_name: str, horizon: int, y_true: pd.Series, y_pred: np.ndarray) -> dict:
-    mae = mean_absolute_error(y_true, y_pred)
-    mse = mean_squared_error(y_true, y_pred)
-    rmse = float(np.sqrt(mse))
-    r2 = r2_score(y_true, y_pred)
-    return {
-        "horizon_minutes": horizon,
-        "model": model_name,
-        "mae": mae,
-        "rmse": rmse,
-        "r2": r2,
-    }
+# evaluate_regression, make_horizon_target, time_split, and the baselines live in forecasting.py
 
 all_results = []
 
@@ -97,21 +92,12 @@ for HORIZON_MINUTES in HORIZONS_MINUTES:
     # ---- DEFINE TARGET (FORECASTING) ----
     # Predict Global_active_power at t + HORIZON_MINUTES.
     # Remove current Global_active_power from X to avoid trivial leakage.
-    y = df["Global_active_power"].shift(-HORIZON_MINUTES)
-    X = df.drop(columns=["Global_active_power"])
-
-    # Drop last rows where future target is not available
-    valid = y.notna()
-    X_h = X.loc[valid]
-    y_h = y.loc[valid]
+    X_h, y_h = make_horizon_target(df, HORIZON_MINUTES)
 
     print(f"✅ Prepared X/y: X={X_h.shape}, y={y_h.shape}")
 
     # ---- TIME-BASED TRAIN/VALIDATION SPLIT ----
-    split_idx = int(len(X_h) * TRAIN_FRACTION)
-
-    X_train, X_val = X_h.iloc[:split_idx], X_h.iloc[split_idx:]
-    y_train, y_val = y_h.iloc[:split_idx], y_h.iloc[split_idx:]
+    X_train, X_val, y_train, y_val = time_split(X_h, y_h, TRAIN_FRACTION)
 
     print(f"✅ Train: {X_train.shape}, Val: {X_val.shape}")
     if VERBOSE:
@@ -132,16 +118,11 @@ for HORIZON_MINUTES in HORIZONS_MINUTES:
     # ---- BASELINE 1: PERSISTENCE ----
     # Predict y(t+H) using value at time t.
     # For y = shift(-H), aligned predictor is current Global_active_power at the same timestamps as y_h.
-    persistence_series = df["Global_active_power"].iloc[:len(y_h)].copy()
-    persistence_series.index = y_h.index
-
-    persistence_pred_val = persistence_series.loc[y_val.index].to_numpy()
+    persistence_pred_val = persistence_baseline(df, y_h, y_val)
     all_results.append(evaluate_regression("baseline_persistence", HORIZON_MINUTES, y_val, persistence_pred_val))
 
     # ---- BASELINE 2: MEAN ----
-    dummy = DummyRegressor(strategy="mean")
-    dummy.fit(X_train, y_train)
-    dummy_pred = dummy.predict(X_val)
+    dummy_pred = mean_baseline(X_train, y_train, X_val)
     all_results.append(evaluate_regression("baseline_mean", HORIZON_MINUTES, y_val, dummy_pred))
 
     # ---- MODEL 1: LINEAR REGRESSION (SCALED) ----

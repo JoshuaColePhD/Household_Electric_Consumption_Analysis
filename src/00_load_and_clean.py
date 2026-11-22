@@ -37,6 +37,8 @@ import matplotlib.pyplot as plt
 from ucimlrepo import fetch_ucirepo
 from pathlib import Path
 
+from forecasting import detect_outliers_iqr
+
 # %%
 # ---- CONFIG ----
 VERBOSE = True
@@ -181,14 +183,6 @@ df = df.copy()
 
 # %%
 # ---- OUTLIER DETECTION (IQR + ROLLING Z-SCORE) ----
-def detect_outliers_iqr(series, factor=1.5):
-    q1 = series.quantile(0.25)
-    q3 = series.quantile(0.75)
-    iqr = q3 - q1
-    lower = q1 - factor * iqr
-    upper = q3 + factor * iqr
-    return (series < lower) | (series > upper)
-
 # Outliers are flagged (not removed) to preserve real consumption spikes for downstream analysis.
 df["outlier_iqr"] = detect_outliers_iqr(df["Global_active_power"])
 
